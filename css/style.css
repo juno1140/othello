@@ -1,0 +1,11 @@
+h1 {
+    text-align: center;
+    background-color: #000;
+    color: white;
+    margin-bottom: 50px;
+}
+#canvas {
+    border: #000 10px solid;
+    display: block;
+    margin: auto;
+}
