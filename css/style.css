@@ -9,3 +9,7 @@ h1 {
     display: block;
     margin: auto;
 }
+p {
+    text-align: center;
+    font-size: 28px;
+}
