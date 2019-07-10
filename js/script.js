@@ -7,9 +7,16 @@ const ImagePath = {
     black:'./images/black.png',
     white:'./images/white.png'
 };
+const initPosition = [ // 初期の石の位置
+    [playerBlack, 3, 4],
+    [playerBlack, 4, 3],
+    [playerWhite, 3, 3],
+    [playerWhite, 4, 4]
+];
 var player = playerBlack; // 現在のプレイヤーを保持する変数
 var canvas = ''; // canvasのDOMを取得
-var ctx = ''; // 
+var ctx = '';
+
 var matrixArr = { // マスの状態を保持する配列
     1:{1:'',2:'',3:'',4:'',5:'',6:''},
     2:{1:'',2:'',3:'',4:'',5:'',6:''},
@@ -19,11 +26,12 @@ var matrixArr = { // マスの状態を保持する配列
     6:{1:'',2:'',3:'',4:'',5:'',6:''}
 }
 var possiblePosition = []; // 配置可能な場所を格納する配列
-
+var endFlag = false; // ゲーム終了のフラグ
 
 // 初期化
 function initial() {
 
+    total(); // 連勝記録の表示
     canvas = document.querySelector('#canvas');
 
     // Canvas対応ブラウザで処理を実行
@@ -50,10 +58,9 @@ function initial() {
         }
 
         // 初期位置
-        drawImage(playerBlack, 3, 4);
-        drawImage(playerBlack, 4, 3);
-        drawImage(playerWhite, 3, 3);
-        drawImage(playerWhite, 4, 4);
+        for (set of initPosition) {
+            drawImage(set[0], set[1], set[2]);
+        }
 
         // 現在のプレイヤーを表示
         turnOutput();
@@ -63,6 +70,7 @@ function initial() {
         
     }
 }
+
 
 // ターンを表示する
 function turnOutput() {
@@ -76,47 +84,60 @@ function turnOutput() {
     turn.innerHTML = color + 'の番です';
 }
 
+
 // クリック時して石を置く処理
 function move(event) {
 
     // クリック位置の計算
-    var click_x = event.clientX - canvas.offsetLeft;
-    var click_y = event.clientY - canvas.offsetTop;
+    var click_x = event.clientX - canvas.offsetLeft - 10; // 10はborder幅分の補正
+    var click_y = event.clientY - canvas.offsetTop - 10; // 10はborder幅分の補正
 
     var matrixX = parseInt(click_x / interval) + 1; // 横マスの設定(1-6)
     var matrixY = parseInt(click_y / interval) + 1; // 縦マスの設定(1-6)
 
     // すでに置かれているマスがクリックされたら処理しない
     if (matrixArr[matrixX][matrixY] !== '') {
-        console.log('そこには置けません');
+        console.log('すでに置かれているマスには置けません。');
         return;
     }
 
     // 石を置いて反転させる(置けない場所が指定されたら処理しない)
     if (!reverseStone(player, matrixX, matrixY)) {
-        console.log("残念ながらそこには置けません");
+        console.log("そこには置けません");
         return;
     }
 
     // プレイヤーを交代する(マスが全て埋まったらゲーム終了)
-    if (checkEmptyPosition() && !checkOnlyOneColor()) {
+    if (checkEmptyPosition() || !checkOnlyOneColor()) {
         changePlayer();
     } else {
-        result();
-        return;
+        endFlag = true;
     }
 
-    // CPUの設定
-    if (player === 'white') {
-        cpu();
-        // プレイヤーを交代する(マスが全て埋まったらゲーム終了)
-        if (checkEmptyPosition() && !checkOnlyOneColor()) {
-            changePlayer();
-        } else {
+    // 0.5秒後に実行
+    setTimeout(function() {
+        // CPUの設定
+        if (endFlag === false && player === 'white') {
+            // playerが変わるまでcpuが操作
+            while (endFlag === false && player === 'white') {
+                cpu();
+                // プレイヤーを交代する(マスが全て埋まったらゲーム終了)
+                if (checkEmptyPosition() || !checkOnlyOneColor()) {
+                    changePlayer();
+                } else {
+                    endFlag = true;
+                }
+            }
+        }
+
+        // ゲーム終了判定
+        if (endFlag === true) {
             result();
             return;
         }
-    }
+
+    }, 500);
+
 }
 
 
@@ -318,7 +339,7 @@ function reverseStone(color, x, y) {
 /**
  * プレイヤーを交代する関数
  */
-function changePlayer() {
+function changePlayer(count = 0) {
 
     if (player === playerBlack) {
         player = playerWhite;
@@ -327,8 +348,11 @@ function changePlayer() {
     }
 
     // 置ける場所がない場合は再度プレイヤーを変える
-    if (!existPossiblePositionCheck(player)) {
-        changePlayer(player);
+    if (count === 0 && !existPossiblePositionCheck(player)) {
+        changePlayer(1);
+    } else if (count > 0 && !existPossiblePositionCheck(player)) {
+        endFlag = true;
+        return;
     }
     
     // 現在のプレイヤーを表示する
@@ -388,7 +412,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[x][i] === color) { // 真下が同色の場合
             break;
         } else if (counter > 0 && matrixArr[x][i] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -406,7 +430,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[x][i] === color) { // 真上が同色の場合
             break;
         } else if (counter > 0 && matrixArr[x][i] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -424,7 +448,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[i][y] === color) { // 真右が同色の場合
             break;
         } else if (counter > 0 && matrixArr[i][y] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -442,7 +466,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[i][y] === color) { // 真左が同色の場合
             break;
         } else if (counter > 0 && matrixArr[i][y] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -465,7 +489,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[x + i][y + i] === color) { // 右斜め下が同色の場合
             break;
         } else if (counter > 0 && matrixArr[x + i][y + i] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -488,7 +512,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[x + i][y - i] === color) { // 右斜め上が同色の場合
             break;
         } else if (counter > 0 && matrixArr[x + i][y - i] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -511,7 +535,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[x - i][y + i] === color) { // 左斜め下が同色の場合
             break;
         } else if (counter > 0 && matrixArr[x - i][y + i] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -534,7 +558,7 @@ function outflankingPlaces(color, x, y) {
         } else if (counter == 0 && matrixArr[x - i][y - i] === color) { // 左斜め上が同色の場合
             break;
         } else if (counter > 0 && matrixArr[x - i][y - i] === color) { // 異色を挟んだ形の場合
-            possiblePosition.push([[x,y]]);
+            return possiblePosition.push([x,y]);
             return;
         }
     }
@@ -627,6 +651,9 @@ function result() {
         turn.innerHTML = '黒' + black + ' ー 白' + white + ' (引き明けです)';
     }
 
+    // 結果をサーバーに送る
+    resultSave(win);
+
 }
 
 function cpu () {
@@ -634,7 +661,50 @@ function cpu () {
     // 置ける場所をチェック
     if (existPossiblePositionCheck(player)) {
         var key = Math.floor(Math.random() * possiblePosition.length);
-        reverseStone(player, possiblePosition[key][0][0], possiblePosition[key][0][1]);
+        reverseStone(player, possiblePosition[key][0], possiblePosition[key][1]);
     }
 
+}
+
+
+/**
+ * 連勝記録を取得する
+ */
+function total() {
+
+    // Ajax
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/php/getTotal.php', true);
+    xhr.onload = function (e) {
+        if (this.status === 200) {
+            var response = this.response;
+            var msg = document.querySelector('#total');
+            msg.textContent = response;
+        }
+    };
+    xhr.send();
+}
+
+/**
+ * 結果をサーバーに送る
+ * @param {String} win 
+ */
+function resultSave(win) {
+
+    // 送信データ
+    var data = new FormData();
+    data.append('winner', win);
+
+    // Ajaxで送信
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/php/resultSave.php', true);
+    xhr.onload = function (e) {
+        if (this.status === 200) {
+            var response = this.response;
+            var msg = document.querySelector('#total');
+            msg.textContent = response;
+        }
+    };
+
+    xhr.send(data);
 }

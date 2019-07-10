@@ -2,7 +2,7 @@ h1 {
     text-align: center;
     background-color: #000;
     color: white;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 #canvas {
     border: #000 10px solid;
@@ -11,5 +11,5 @@ h1 {
 }
 p {
     text-align: center;
-    font-size: 28px;
+    font-size: 24px;
 }
