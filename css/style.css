@@ -1,8 +1,18 @@
+@charset "UTF-8";
+* {
+    margin: 0;
+    padding: 0;
+}
+@media screen and (max-width: 500px) {
+    html {
+        width: 500px;
+    }
+}
 h1 {
     text-align: center;
     background-color: #000;
     color: white;
-    margin-bottom: 30px;
+    margin: 30px 0;
 }
 #canvas {
     border: #000 10px solid;
