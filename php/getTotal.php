@@ -3,6 +3,6 @@
 $fp = @fopen('total.txt', 'r');
 
 if ($fp) {
-    echo "現在 " . fgets($fp) . " 連勝中です";
+    echo "現在 " . fgets($fp) . " 連勝中";
 }
 ?>

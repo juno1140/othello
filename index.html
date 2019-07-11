@@ -1,15 +1,35 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-139382417-5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'UA-139382417-5');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>ふたまわりちいさいオセロ</title>
+    <meta name="description" content="ふたまわりちいさいオセロです。目指せ、連勝100!!">
+    <meta property="og:url" content="https://othello.junosbooks.xyz">
+    <meta property="og:title" content="ふたまわりちいさいオセロ">
+    <meta property="og:description" content="ふたまわりちいさいオセロです。目指せ、100連勝!!">
+    <meta property="og:image" content="https://othello.junosbooks.xyz/images/black.png">
+    <link rel="shortcut icon" href="./images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/white.png">
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body onload="initial()">
     <h1>ふたまわりちいさいオセロ</h1>
-    <p id='total'></p>
+    <div id="flex">
+        <p id='total'></p>
+        <input id="reload" type="button" value="再度プレイ" onclick="reload()">
+    </div>
+    <small>(連勝記録は全プレイヤーの総計です)</small>
     <canvas id="canvas" width="480" height="480"></canvas>
     <p id='turn'></p>
     <script src="./js/script.js"></script>

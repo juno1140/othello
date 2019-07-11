@@ -14,6 +14,7 @@ const initPosition = [ // 初期の石の位置
     [playerWhite, 4, 4]
 ];
 var player = playerBlack; // 現在のプレイヤーを保持する変数
+var btn = document.querySelector('#reload'); // リロードボタン
 var canvas = ''; // canvasのDOMを取得
 var ctx = '';
 
@@ -32,6 +33,7 @@ var endFlag = false; // ゲーム終了のフラグ
 function initial() {
 
     total(); // 連勝記録の表示
+    btn.style.display = "none"; // リロードボタンを非表示にしておく
     canvas = document.querySelector('#canvas');
 
     // Canvas対応ブラウザで処理を実行
@@ -44,7 +46,7 @@ function initial() {
 
         for (let i = 1; i <= 6; i++) {
             // 横線の描画
-            // ctx.beginPath();
+            // ctx.beginPath(); // 書かなくてもいけるみたい
             // ctx.strokeStyle = "black";
             ctx.moveTo(0, interval * i);
             ctx.lineTo(x, interval * i);
@@ -67,7 +69,7 @@ function initial() {
 
         // クリック時の処理
         canvas.onclick = move;
-        
+
     }
 }
 
@@ -651,8 +653,8 @@ function result() {
         turn.innerHTML = '黒' + black + ' ー 白' + white + ' (引き明けです)';
     }
 
-    // 結果をサーバーに送る
-    resultSave(win);
+    resultSave(win); // 結果をサーバーに送る
+    btn.style.display = "block"; // リロードボタンを表示する
 
 }
 
@@ -707,4 +709,10 @@ function resultSave(win) {
     };
 
     xhr.send(data);
+}
+
+
+// 現在表示されているページをリロードする
+function reload() {
+    location.reload();
 }
